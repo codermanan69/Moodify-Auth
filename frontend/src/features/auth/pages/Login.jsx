@@ -6,27 +6,43 @@ import { useAuth } from '../hooks/useAuth'
 import { useNavigate } from 'react-router';
 
 const Login = () => {
-
-
     const { loading, handleLogin } = useAuth()
     const navigate = useNavigate()
 
-
-
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
-
-
+    const [error, setError] = useState("")
 
     async function handleSubmit(e) {
         e.preventDefault()
-        await handleLogin({email, password})
-        navigate("/")
+        setError("")
+
+        try {
+            await handleLogin({email, password})
+            navigate("/")
+        } catch (err) {
+            setError(err.response?.data?.message || err.message || "Login failed. Please check your credentials.")
+        }
     }
     return (
         <main className="login-page">
             <div className="form-container">
                 <h1>Login</h1>
+                {error && (
+                    <div style={{
+                        background: 'rgba(221, 66, 0, 0.15)',
+                        border: '1px solid #dd4200',
+                        color: '#ff6a00',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        marginBottom: '16px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        textAlign: 'center'
+                    }}>
+                        {error}
+                    </div>
+                )}
                 <form onSubmit={handleSubmit}>
                     <FormGroup
                         value={email}

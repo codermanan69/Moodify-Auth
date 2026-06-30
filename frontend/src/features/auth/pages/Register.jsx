@@ -10,22 +10,40 @@ const Register = () => {
     const [username, setUsername] = useState("")
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const [error, setError] = useState("")
 
     const {loading , handleRegister} = useAuth()
 
     async function handleSubmit (e) {
         e.preventDefault()
+        setError("")
 
-        await handleRegister({username , email , password})
-
-        navigate('/')
-       
-
+        try {
+            await handleRegister({username , email , password})
+            navigate('/')
+        } catch (err) {
+            setError(err.response?.data?.message || err.message || "Registration failed. Please try again.")
+        }
     }
     return (
         <main className="register-page">
             <div className='form-container'>
                 <h1>Register</h1>
+                {error && (
+                    <div style={{
+                        background: 'rgba(221, 66, 0, 0.15)',
+                        border: '1px solid #dd4200',
+                        color: '#ff6a00',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        marginBottom: '16px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        textAlign: 'center'
+                    }}>
+                        {error}
+                    </div>
+                )}
                 <form onSubmit={handleSubmit}>
                     <FormGroup
                         value={username}
