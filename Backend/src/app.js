@@ -4,6 +4,8 @@ const cors = require("cors");
 
 
 
+const path = require("path")
+
 const app   = express()
 app.use(cors({
     origin : "http://localhost:5173",
@@ -17,5 +19,11 @@ const songRoutes = require("./routes/song.routes")
 
 app.use("/api/auth", authRoutes)
 app.use("/api/songs",songRoutes)
+
+app.use(express.static(path.join(__dirname, "../public")))
+
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../public/index.html"))
+})
 
 module.exports = app
