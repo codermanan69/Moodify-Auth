@@ -153,26 +153,8 @@ const Player = () => {
         <span style={styles.timeLabel}>{formatTime(duration)}</span>
       </div>
 
-      {/* Controls Container */}
+      {/* Controls Container (Playback buttons centered) */}
       <div style={styles.controlsArea}>
-        {/* Speed Option */}
-        <div style={styles.speedControl}>
-          <span style={styles.speedLabel}>Speed:</span>
-          <select
-            value={speed}
-            onChange={(e) => setSpeed(parseFloat(e.target.value))}
-            style={styles.speedSelect}
-          >
-            <option value="0.5">0.5x</option>
-            <option value="0.75">0.75x</option>
-            <option value="1">1.0x (Normal)</option>
-            <option value="1.25">1.25x</option>
-            <option value="1.5">1.5x</option>
-            <option value="2">2.0x</option>
-          </select>
-        </div>
-
-        {/* Playback Buttons */}
         <div style={styles.playbackButtons}>
           {/* Previous Track */}
           <button 
@@ -226,6 +208,26 @@ const Player = () => {
               <path d="M6 18l8.5-6L6 6zm9-12h2v12h-2z"/>
             </svg>
           </button>
+        </div>
+      </div>
+
+      {/* Extra Secondary Controls (Speed and Volume in a separated row) */}
+      <div style={styles.extraControlsArea}>
+        {/* Speed Option */}
+        <div style={styles.speedControl}>
+          <span style={styles.speedLabel}>Speed:</span>
+          <select
+            value={speed}
+            onChange={(e) => setSpeed(parseFloat(e.target.value))}
+            style={styles.speedSelect}
+          >
+            <option value="0.5">0.5x</option>
+            <option value="0.75">0.75x</option>
+            <option value="1">1.0x (Normal)</option>
+            <option value="1.25">1.25x</option>
+            <option value="1.5">1.5x</option>
+            <option value="2">2.0x</option>
+          </select>
         </div>
 
         {/* Volume controls */}
@@ -384,9 +386,19 @@ const styles = {
   },
   controlsArea: {
     display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    margin: '4px 0',
+  },
+  extraControlsArea: {
+    display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    gap: '10px',
+    width: '100%',
+    borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+    paddingTop: '14px',
+    marginTop: '4px',
   },
   speedControl: {
     display: 'flex',
@@ -410,7 +422,7 @@ const styles = {
   playbackButtons: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
+    gap: '16px',
   },
   controlButton: {
     background: 'none',
@@ -450,7 +462,7 @@ const styles = {
     gap: '8px',
   },
   volumeSlider: {
-    width: '60px',
+    width: '80px',
     height: '4px',
     accentColor: '#dd4200',
     cursor: 'pointer',
