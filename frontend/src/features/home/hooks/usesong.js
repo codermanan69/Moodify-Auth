@@ -5,21 +5,22 @@ import { SongContext } from '../song.context'
 export const useSong = () => {
     const context = useContext(SongContext)
 
-    const { loading, setLoading, song, setSong } = context
+    const { loading, setLoading, playlist, setPlaylist, currentSongIndex, setCurrentSongIndex, song } = context
 
     async function handleGetSong({ mood }) {
         setLoading(true)
         try {
             const data = await getSong({ mood })
-            if (data && data.song) {
-                setSong(data.song)
+            if (data && data.songs && data.songs.length > 0) {
+                setPlaylist(data.songs)
+                setCurrentSongIndex(0)
             }
         } catch (error) {
-            console.error("Error fetching song:", error)
+            console.error("Error fetching playlist:", error)
         } finally {
             setLoading(false)
         }
     }
 
-    return { loading, song, handleGetSong }
+    return { loading, playlist, currentSongIndex, setCurrentSongIndex, song, handleGetSong }
 }

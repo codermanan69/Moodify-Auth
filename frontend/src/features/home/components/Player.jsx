@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useContext } from 'react'
 import { SongContext } from '../song.context'
 
 const Player = () => {
-  const { song } = useContext(SongContext)
+  const { playlist, currentSongIndex, setCurrentSongIndex, song } = useContext(SongContext)
   const audioRef = useRef(null)
   
   const [isPlaying, setIsPlaying] = useState(false)
@@ -71,6 +71,29 @@ const Player = () => {
     }
   }
 
+  const skipNext = () => {
+    if (playlist && currentSongIndex < playlist.length - 1) {
+      setCurrentSongIndex(currentSongIndex + 1)
+      setIsPlaying(true) // Keep playing when skipping
+    }
+  }
+
+  const skipPrev = () => {
+    if (playlist && currentSongIndex > 0) {
+      setCurrentSongIndex(currentSongIndex - 1)
+      setIsPlaying(true) // Keep playing when skipping
+    }
+  }
+
+  const handleTrackEnded = () => {
+    if (playlist && currentSongIndex < playlist.length - 1) {
+      setCurrentSongIndex(currentSongIndex + 1)
+      setIsPlaying(true)
+    } else {
+      setIsPlaying(false)
+    }
+  }
+
   const formatTime = (time) => {
     if (isNaN(time)) return '0:00'
     const mins = Math.floor(time / 60)
@@ -81,7 +104,7 @@ const Player = () => {
   if (!song) {
     return (
       <div style={styles.noSong}>
-        <p>No song loaded. Scan your face to find a song matching your mood!</p>
+        <p>No song loaded. Scan your face to find a playlist matching your mood!</p>
       </div>
     )
   }
@@ -93,7 +116,7 @@ const Player = () => {
         src={song.url}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
-        onEnded={() => setIsPlaying(false)}
+        onEnded={handleTrackEnded}
       />
 
       {/* Album Art & Details */}
@@ -151,30 +174,57 @@ const Player = () => {
 
         {/* Playback Buttons */}
         <div style={styles.playbackButtons}>
+          {/* Previous Track */}
+          <button 
+            onClick={skipPrev} 
+            disabled={currentSongIndex === 0} 
+            style={{ ...styles.controlButton, opacity: currentSongIndex === 0 ? 0.3 : 1 }} 
+            title="Previous Track"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+            </svg>
+          </button>
+
+          {/* Skip Backward 5s */}
           <button onClick={skipBackward} style={styles.controlButton} title="Backward 5s">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/>
             </svg>
             <span style={styles.skipSec}>-5s</span>
           </button>
 
+          {/* Play / Pause */}
           <button onClick={togglePlay} style={styles.playButton} title={isPlaying ? "Pause" : "Play"}>
             {isPlaying ? (
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
               </svg>
             ) : (
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '4px' }}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '4px' }}>
                 <path d="M8 5v14l11-7z"/>
               </svg>
             )}
           </button>
 
+          {/* Skip Forward 5s */}
           <button onClick={skipForward} style={styles.controlButton} title="Forward 5s">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/>
             </svg>
             <span style={styles.skipSec}>+5s</span>
+          </button>
+
+          {/* Next Track */}
+          <button 
+            onClick={skipNext} 
+            disabled={playlist && currentSongIndex === playlist.length - 1} 
+            style={{ ...styles.controlButton, opacity: (playlist && currentSongIndex === playlist.length - 1) ? 0.3 : 1 }} 
+            title="Next Track"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 18l8.5-6L6 6zm9-12h2v12h-2z"/>
+            </svg>
           </button>
         </div>
 
@@ -198,6 +248,42 @@ const Player = () => {
           />
         </div>
       </div>
+
+      {/* Playlist Queue */}
+      {playlist && playlist.length > 0 && (
+        <div style={styles.queueContainer}>
+          <h4 style={styles.queueHeader}>Up Next ({playlist.length} songs)</h4>
+          <div style={styles.queueList}>
+            {playlist.map((track, idx) => (
+              <div
+                key={idx}
+                onClick={() => {
+                  setCurrentSongIndex(idx)
+                  setIsPlaying(true)
+                }}
+                style={{
+                  ...styles.queueItem,
+                  ...(idx === currentSongIndex ? styles.activeQueueItem : {})
+                }}
+              >
+                <img src={track.posterUrl} alt="" style={styles.queueItemPoster} />
+                <div style={styles.queueItemInfo}>
+                  <span style={{
+                    ...styles.queueItemTitle,
+                    ...(idx === currentSongIndex ? styles.activeQueueItemTitle : {})
+                  }}>
+                    {track.title}
+                  </span>
+                  <span style={styles.queueItemMood}>{track.mood}</span>
+                </div>
+                {idx === currentSongIndex && (
+                  <span style={styles.playingBadge}>Playing</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Adding Rotation Keyframes into DOM */}
       <style>{`
@@ -265,6 +351,7 @@ const styles = {
     fontWeight: '600',
     margin: 0,
     letterSpacing: '-0.5px',
+    textAlign: 'left',
   },
   moodBadge: {
     fontSize: '11px',
@@ -323,7 +410,7 @@ const styles = {
   playbackButtons: {
     display: 'flex',
     alignItems: 'center',
-    gap: '16px',
+    gap: '12px',
   },
   controlButton: {
     background: 'none',
@@ -367,6 +454,85 @@ const styles = {
     height: '4px',
     accentColor: '#dd4200',
     cursor: 'pointer',
+  },
+  queueContainer: {
+    borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+    paddingTop: '16px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+  },
+  queueHeader: {
+    fontSize: '12px',
+    fontWeight: '700',
+    color: '#aaa',
+    margin: 0,
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+    textAlign: 'left',
+  },
+  queueList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    maxHeight: '150px',
+    overflowY: 'auto',
+    paddingRight: '4px',
+  },
+  queueItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '8px 12px',
+    borderRadius: '10px',
+    cursor: 'pointer',
+    background: 'rgba(255, 255, 255, 0.02)',
+    transition: 'background 0.2s, transform 0.1s',
+    border: '1px solid transparent',
+  },
+  activeQueueItem: {
+    background: 'rgba(221, 66, 0, 0.12)',
+    borderColor: 'rgba(221, 66, 0, 0.3)',
+  },
+  queueItemPoster: {
+    width: '36px',
+    height: '36px',
+    borderRadius: '6px',
+    objectFit: 'cover',
+  },
+  queueItemInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    alignItems: 'flex-start',
+    overflow: 'hidden',
+  },
+  queueItemTitle: {
+    fontSize: '13px',
+    fontWeight: '500',
+    color: '#eee',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    width: '100%',
+    textAlign: 'left',
+  },
+  activeQueueItemTitle: {
+    color: '#ff6a00',
+    fontWeight: '600',
+  },
+  queueItemMood: {
+    fontSize: '10px',
+    color: '#aaa',
+    textTransform: 'uppercase',
+  },
+  playingBadge: {
+    fontSize: '10px',
+    fontWeight: '700',
+    color: '#ff6a00',
+    background: 'rgba(221, 66, 0, 0.15)',
+    padding: '2px 6px',
+    borderRadius: '8px',
   }
 }
 
